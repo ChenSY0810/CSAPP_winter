@@ -176,7 +176,10 @@ int isTmax(int x) {
  *   Rating: 2
  */
 int allOddBits(int x) {
-  return 2;
+    int i = 0xAA;
+    int a = (i << 8) + i;
+    int b = (a << 16) + a;
+  return !((x & b) ^ b);
 }
 /* 
  * negate - return -x 
@@ -186,7 +189,7 @@ int allOddBits(int x) {
  *   Rating: 2
  */
 int negate(int x) {
-  return 2;
+  return ~x + 1;
 }
 //3
 /* 
@@ -199,8 +202,13 @@ int negate(int x) {
  *   Rating: 3
  */
 int isAsciiDigit(int x) {
-  return 2;
+    int pre = (x >> 4) ^ 0x3;
+    int suf = x & 0xF;
+    int zeroToSeven = !(suf >> 3);
+    int EightNine = !( ( suf >> 1 ) ^ 0x4 );
+    return (!pre) & (zeroToSeven | EightNine );
 }
+
 /* 
  * conditional - same as x ? y : z 
  *   Example: conditional(2,4,5) = 4
@@ -209,7 +217,14 @@ int isAsciiDigit(int x) {
  *   Rating: 3
  */
 int conditional(int x, int y, int z) {
-  return 2;
+    // 32{!x} & z | 32{!!x} & y
+    int a = !x;
+    int b = (a << 1) + a;
+    int c = (b << 2) + b;
+    int d = (c << 4) + c;
+    int e = (d << 8) + d;
+    int f = (e << 16) + e;
+    return ( f & z ) | (~f & y); 
 }
 /* 
  * isLessOrEqual - if x <= y  then return 1, else return 0 
@@ -219,7 +234,16 @@ int conditional(int x, int y, int z) {
  *   Rating: 3
  */
 int isLessOrEqual(int x, int y) {
-  return 2;
+    int equal = !( x ^ y );
+    int signX = (x >> 31) & 0x1;
+    int signY = (y >> 31) & 0x1;
+    int highest = ~(0x1 << 31);
+    int signMinus = (( (x & highest ) + (~(y & highest )) + 1) >> 31) & 0x1;
+    // x: + y: + x-y : -
+    // x: + y: - 0
+    // x: - y: + 1
+    // x: - y: - x-y : -
+    return equal | (signX & !signY) | ( (!(signX ^ signY)) & signMinus );
 }
 //4
 /* 
@@ -231,7 +255,8 @@ int isLessOrEqual(int x, int y) {
  *   Rating: 4 
  */
 int logicalNeg(int x) {
-  return 2;
+    
+    // not 0 -> 0, 0 -> 1
 }
 /* howManyBits - return the minimum number of bits required to represent x in
  *             two's complement
